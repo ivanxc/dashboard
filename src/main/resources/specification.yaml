@@ -1,0 +1,497 @@
+openapi: 3.0.3
+info:
+  title: Online dashboard API
+  description: Online dashboard
+  version: 1.0.0
+tags:
+  - name: user
+    description: Interaction with user
+  - name: form
+    description: Interaction with form
+  - name: element on form
+    description: Interaction with elements in form
+paths:
+  /users:
+    post:
+      tags:
+        - user
+      summary: "User log in"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: "Correct login and password"
+        '401':
+          description: "Incorrect password"
+        '403':
+          description: "There is no user with entered login"
+
+  /users/create:
+    post:
+      tags:
+        - user
+      summary: "Create a user"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          description: "User created"
+        '400':
+          description: "Incorrect data"
+          content:
+            application/json:
+              schema:
+                type: string
+                default: "User is unauthorized"
+
+  /users/me:
+    get:
+      tags:
+        - user
+      summary: "Get a user info"
+      responses:
+        '200':
+          description: "Get a existing user"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    put:
+      tags:
+        - user
+      summary: "Change an user data"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: "User data changed"
+        '404':
+          description: "Incorrect parameters"
+    delete:
+      tags:
+        - user
+      summary: "Delete an user"
+      responses:
+        '204':
+          description: "User deleted"
+
+  /forms/create:
+    post:
+      tags:
+        - form
+      summary: "Create a form"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Form'
+      responses:
+        '201':
+          description: "Form created"
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int64
+                example: 1
+        '401':
+          description: "User is unauthorized"
+
+  /forms/{id}:
+    parameters:
+      - name: "id"
+        in: path
+        description: "ID of form"
+        required: true
+        schema:
+          type: integer
+          format: int64
+          example: 1
+    get:
+      tags:
+        - form
+      summary: "Get a form by id"
+      responses:
+        '200':
+          description: "Form was returned"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Form"
+        '401':
+          description: "Not enough privileges"
+        '404':
+          description: "Form is not found"
+    put:
+      tags:
+        - form
+      summary: "Change a title of form"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: "User data changed"
+        '401':
+          description: "User is unauthorized"
+    delete:
+      tags:
+        - form
+      summary: "Delete an form"
+      responses:
+        '204':
+          description: "Form deleted"
+        '401':
+          description: "User is unauthorized"
+        '403':
+          description: "User has no enough rights"
+
+  /forms/{id}/users:
+    parameters:
+      - name: "id"
+        in: path
+        description: "ID of form"
+        required: true
+        schema:
+          type: integer
+          format: int64
+          example: 1
+    get:
+      tags:
+        - user
+        - form
+      summary: "Get a users of form"
+      responses:
+        '200':
+          description: "Users of form was returned"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        '401':
+          description: "User is unauthorized"
+        '403':
+          description: "User has no access to form"
+        '404':
+          description: "Form not found"
+    post:
+      tags:
+        - user
+        - form
+      summary: "Add user to the form"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: "User was added to form"
+        '400':
+          description: "Wrong parameters"
+        '401':
+          description: "User is unauthorized"
+        '403':
+          description: "User has no enough rights"
+        '404':
+          description: "Form not found"
+    put:
+      tags:
+        - user
+        - form
+      summary: "Change an user role in form"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserOnForm"
+      responses:
+        '200':
+          description: "User's role in form was changed"
+        '400':
+          description: "Wrong parameters"
+        '401':
+          description: "User is unauthorized"
+        '403':
+          description: "User has no enough rights"
+        '404':
+          description: "Form not found"
+
+  /forms/{formId}/users/{userId}:
+    parameters:
+      - name: "formId"
+        in: path
+        description: "ID of form"
+        required: true
+        schema:
+          type: integer
+          format: int64
+          example: 1
+      - name: "userId"
+        in: path
+        description: "ID of user"
+        required: true
+        schema:
+          type: integer
+          format: int64
+          example: 1
+    delete:
+      tags:
+        - user
+        - form
+      summary: "Delete an user from form"
+      responses:
+        '204':
+          description: "User deleted"
+        '401':
+          description: "User is unauthorized"
+        '403':
+          description: "User has no enough rights"
+        '404':
+          description: "Form not found"
+
+  /forms/{id}/element:
+    parameters:
+      - name: "id"
+        in: path
+        description: "ID of form"
+        required: true
+        schema:
+          type: integer
+          format: int64
+          example: 1
+    get:
+      tags:
+        - element
+        - form
+      summary: "Get an elements of form"
+      responses:
+        '200':
+          description: "Elements of form was returned"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ElementOnForm"
+        '401':
+          description: "User is unauthorized"
+        '403':
+          description: "User has no access to form"
+        '404':
+          description: "Form not found"
+    post:
+      tags:
+        - element
+        - form
+      summary: "Add element to the form"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ElementOnForm"
+      responses:
+        '200':
+          description: "Element was added to form"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ElementOnForm"
+        '400':
+          description: "Wrong parameters"
+        '401':
+          description: "User is unauthorized"
+        '403':
+          description: "User has no enough rights"
+        '404':
+          description: "Form not found"
+    put:
+      tags:
+        - element
+        - form
+      summary: "Change an element attributes in form"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ElementOnForm"
+      responses:
+        '200':
+          description: "Element was changed in form"
+        '400':
+          description: "Wrong parameters"
+        '401':
+          description: "User is unauthorized"
+        '403':
+          description: "User has no enough rights"
+        '404':
+          description: "Form not found"
+
+  /forms/{formId}/element/{elementOnFormId}:
+    parameters:
+      - name: "formId"
+        in: path
+        description: "ID of form"
+        required: true
+        schema:
+          type: integer
+          format: int64
+          example: 1
+      - name: "elementOnFormId"
+        in: path
+        description: "ID of form"
+        required: true
+        schema:
+          type: integer
+          format: int64
+          example: 1
+    delete:
+      tags:
+        - element
+        - form
+      summary: "Delete an element from form"
+      responses:
+        '204':
+          description: "Element deleted"
+        '401':
+          description: "Element is unauthorized"
+        '403':
+          description: "Element has no enough rights"
+        '404':
+          description: "Form not found"
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          minLength: 4
+          maxLength: 60
+          example: "John Doe"
+        password:
+          type: string
+          minLength: 6
+          maxLength: 255
+          example: "qwerty12345"
+        forms:
+          type: array
+          items:
+            type: integer
+          example: [1, 2, 3]
+    UserOnForm:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+          example: 1
+        formId:
+          type: integer
+          format: int64
+          example: 1
+        role:
+          type: string
+          example: "Editor"
+    Form:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        type:
+          type: string
+          example: "canban"
+        title:
+          type: string
+          minLength: 1
+          maxLength: 60
+          example: "My canban"
+        created:
+          type: string
+          example: "2022-01-01 16:00:00"
+        updated:
+          type: string
+          example: "2022-02-02 16:00:00"
+        users:
+          type: array
+          items:
+            type: integer
+            format: int64
+          example: [1, 2, 3]
+        elements:
+          type: array
+          items:
+            type: integer
+            format: int64
+    ElementOnForm:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        elementDefinitionId:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          minLength: 1
+          maxLength: 60
+          example: "task"
+        formId:
+          type: integer
+          format: int64
+          example: 1
+        attributes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Attribute"
+    Attribute:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: "size"
+        value:
+          type: string
+          minLength: 1
+          maxLength: 255
+          example: "14"
